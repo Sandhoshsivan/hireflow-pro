@@ -1,0 +1,144 @@
+<!-- ── Add / Edit Application Modal ── -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-ttl">Track Application</div>
+      <button class="btn btn-ghost btn-icon" onclick="Modal.close('add-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id" value="">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Company *</label>
+          <input class="form-input" id="f-company" placeholder="e.g. Salesforce, Microsoft" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role *</label>
+          <input class="form-input" id="f-role" placeholder="e.g. Senior .NET Backend Developer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="f-status">
+            <option>Saved</option>
+            <option selected>Applied</option>
+            <option>Interview</option>
+            <option>Offer</option>
+            <option>Rejected</option>
+            <option>Ghosted</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Applied Date</label>
+          <input type="date" class="form-input" id="f-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salary / Package</label>
+          <input class="form-input" id="f-salary" placeholder="₹22 LPA  or  AED 15k/mo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Source</label>
+          <select class="form-select" id="f-source">
+            <option>LinkedIn</option><option>Naukri</option><option>Indeed</option>
+            <option>Company Website</option><option>Referral</option><option>AngelList</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-input" id="f-location" placeholder="Bangalore / UAE / Remote">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Follow-up Date</label>
+          <input type="date" class="form-input" id="f-followup">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <select class="form-select" id="f-priority">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job URL</label>
+          <input class="form-input" id="f-url" placeholder="https://...">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="f-notes" placeholder="Recruiter contact, salary negotiation details, interview rounds, key requirements..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="Modal.close('add-modal')">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveApplication()">
+        <span>💾</span> Save Application
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Global app form logic
+window.openAddModal = function(id) {
+  document.getElementById('edit-id').value = id || '';
+  if (id) {
+    document.getElementById('modal-ttl').textContent = 'Edit Application';
+    document.getElementById('modal-save-btn').innerHTML = '<span>💾</span> Update';
+    API.get('/api/applications/' + id).then(a => {
+      document.getElementById('f-company').value = a.company || '';
+      document.getElementById('f-role').value    = a.role || '';
+      document.getElementById('f-status').value  = a.status || 'Applied';
+      document.getElementById('f-date').value    = a.date_applied || '';
+      document.getElementById('f-salary').value  = a.salary || '';
+      document.getElementById('f-source').value  = a.source || 'LinkedIn';
+      document.getElementById('f-location').value= a.location || '';
+      document.getElementById('f-followup').value= a.followup || '';
+      document.getElementById('f-priority').value= a.priority || 'medium';
+      document.getElementById('f-url').value     = a.job_url || '';
+      document.getElementById('f-notes').value   = a.notes || '';
+    });
+  } else {
+    document.getElementById('modal-ttl').textContent = 'Track Application';
+    document.getElementById('modal-save-btn').innerHTML = '<span>💾</span> Save Application';
+    ['f-company','f-role','f-salary','f-location','f-followup','f-url','f-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-status').value   = 'Applied';
+    document.getElementById('f-source').value   = 'LinkedIn';
+    document.getElementById('f-priority').value = 'medium';
+    document.getElementById('f-date').value     = new Date().toISOString().split('T')[0];
+  }
+  Modal.open('add-modal');
+};
+
+window.saveApplication = async function() {
+  const id = document.getElementById('edit-id').value;
+  const co = document.getElementById('f-company').value.trim();
+  if (!co) { document.getElementById('f-company').focus(); toast('Company name is required', 'error'); return; }
+  const data = {
+    company:      co,
+    role:         document.getElementById('f-role').value.trim(),
+    status:       document.getElementById('f-status').value,
+    date_applied: document.getElementById('f-date').value,
+    salary:       document.getElementById('f-salary').value,
+    source:       document.getElementById('f-source').value,
+    location:     document.getElementById('f-location').value,
+    followup:     document.getElementById('f-followup').value || null,
+    priority:     document.getElementById('f-priority').value,
+    job_url:      document.getElementById('f-url').value,
+    notes:        document.getElementById('f-notes').value,
+  };
+  try {
+    if (id) {
+      await API.put('/api/applications/' + id, data);
+      toast('Application updated ✓', 'success');
+    } else {
+      await API.post('/api/applications', data);
+      toast(`${co} tracked! 🎯`, 'success');
+    }
+    Modal.close('add-modal');
+    if (typeof refreshPage === 'function') refreshPage();
+    loadNavCounts();
+  } catch(e) {
+    toast(e.message || 'Save failed', 'error');
+  }
+};
+</script>

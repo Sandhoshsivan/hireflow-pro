@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Applications{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <span class="topbar-title">Applications</span>
+    <span class="topbar-subtitle" id="app-count-lbl"></span>
+  </div>
+  <div class="topbar-actions">
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="form-input search-input" id="search-inp" placeholder="Search company, role..." style="width:220px" oninput="loadApps()">
+      </div>
+      <select class="form-select" id="status-filter" style="width:130px" onchange="loadApps()">
+        <option value="">All Status</option>
+        <option>Saved</option><option>Applied</option><option>Interview</option>
+        <option>Offer</option><option>Rejected</option><option>Ghosted</option>
+      </select>
+      <select class="form-select" id="sort-sel" style="width:140px" onchange="loadApps()">
+        <option value="date_desc">Newest First</option>
+        <option value="date_asc">Oldest First</option>
+        <option value="company">Company A–Z</option>
+        <option value="salary">Salary</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()"><span>＋</span> Track Job</button>
+  </div>
+</div>
+
+<div class="page-content" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+  <div style="flex:1;overflow-y:auto">
+    <table class="data-table" id="app-table">
+      <thead>
+        <tr>
+          <th style="width:28%">Company / Role</th>
+          <th>Status</th>
+          <th>Applied</th>
+          <th>Salary</th>
+          <th>Source</th>
+          <th>Location</th>
+          <th>Follow-up</th>
+          <th>Priority</th>
+          <th style="width:60px"></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="list-empty" class="empty-state" style="display:none">
+      <div class="empty-icon">📭</div>
+      <div class="empty-text">No applications found</div>
+      <div class="empty-sub">Try a different filter or add a new application</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Detail Drawer ── -->
+<div class="drawer-overlay" id="detail-overlay" onclick="Drawer.close('detail')"></div>
+<div class="drawer" id="detail">
+
+  <div class="drawer-header">
+    <div id="d-header">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px" id="d-company">—</div>
+      <div style="font-size:14px;color:var(--text2);margin-top:2px" id="d-role">—</div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap" id="d-actions"></div>
+    </div>
+    <button class="btn btn-ghost btn-icon" onclick="Drawer.close('detail')" style="flex-shrink:0">✕</button>
+  </div>
+
+  <div class="drawer-body" id="d-body"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentOpenId = null;
+
+// Check URL for auto-open
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('status')) document.getElementById('status-filter').value = urlParams.get('status');
+
+async function loadApps() {
+  const search = document.getElementById('search-inp').value;
+  const status = document.getElementById('status-filter').value;
+  const sort   = document.getElementById('sort-sel').value;
+  let url = `/api/applications?sort=${sort}`;
+  if (status) url += `&status=${status}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+
+  const apps = await API.get(url);
+  document.getElementById('app-count-lbl').textContent = apps.length + ' application' + (apps.length !== 1 ? 's' : '');
+
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('list-empty');
+  if (!apps.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = apps.map(a => `
+    <tr onclick="openDetail(${a.id})">
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:8px;background:${avatarColor(a.company)}18;color:${avatarColor(a.company)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">${a.company[0]}</div>
+          <div>
+            <div class="td-company truncate">${a.company}</div>
+            <div class="td-role truncate">${a.role}</div>
+          </div>
+        </div>
+      </td>
+      <td>${badge(a.status)}</td>
+      <td class="td-mono">${fmtDate(a.date_applied)}</td>
+      <td class="td-salary">${a.salary || '—'}</td>
+      <td class="td-mono">${a.source || '—'}</td>
+      <td style="font-size:12px;color:var(--text2)">${a.location || '—'}</td>
+      <td class="td-mono" style="color:${a.followup && new Date(a.followup) <= new Date() ? 'var(--amber)' : 'var(--text3)'}">${fmtDate(a.followup)}</td>
+      <td>${pDot(a.priority)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation();openAddModal(${a.id})" title="Edit">✏️</button>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation();deleteApp(${a.id},'${a.company}')" title="Delete">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function openDetail(id) {
+  currentOpenId = id;
+  const a = await API.get('/api/applications/' + id);
+
+  document.getElementById('d-company').textContent = a.company;
+  document.getElementById('d-role').textContent = a.role + (a.location ? '  ·  ' + a.location : '');
+
+  document.getElementById('d-actions').innerHTML = `
+    ${badge(a.status)}
+    <button class="btn btn-outline btn-sm" onclick="openAddModal(${a.id})">✏️ Edit</button>
+    <select class="form-select" style="font-size:12px;padding:4px 8px;width:auto" onchange="quickStatus(${a.id},this.value)">
+      ${['Saved','Applied','Interview','Offer','Rejected','Ghosted'].map(s=>`<option${a.status===s?' selected':''}>${s}</option>`).join('')}
+    </select>
+    ${a.job_url ? `<a href="${a.job_url}" target="_blank" class="btn btn-outline btn-sm">🔗 Job Post</a>` : ''}
+    <button class="btn btn-danger btn-sm" onclick="deleteApp(${a.id},'${a.company.replace("'","\\'")}')">🗑 Delete</button>
+  `;
+
+  const tl = (a.timeline||[]).map((t,i,arr) => `
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot"></div>${i < arr.length-1 ? '<div class="tl-line"></div>' : ''}</div>
+      <div class="tl-content"><div class="tl-action">${t.action}</div><div class="tl-time">${new Date(t.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>
+    </div>`).join('');
+
+  document.getElementById('d-body').innerHTML = `
+    <div class="drawer-section">
+      <div class="drawer-section-label">Details</div>
+      <div class="info-grid">
+        <div class="info-row"><div class="info-key">Applied</div><div class="info-val">${fmtDate(a.date_applied)} (${daysAgo(a.date_applied)}d ago)</div></div>
+        <div class="info-row"><div class="info-key">Salary</div><div class="info-val" style="color:var(--green)">${a.salary || '—'}</div></div>
+        <div class="info-row"><div class="info-key">Source</div><div class="info-val">${a.source || '—'}</div></div>
+        <div class="info-row"><div class="info-key">Priority</div><div class="info-val" style="display:flex;align-items:center;gap:6px">${pDot(a.priority)} ${a.priority}</div></div>
+        ${a.followup ? `<div class="info-row"><div class="info-key">Follow-up</div><div class="info-val" style="color:${new Date(a.followup)<=new Date()?'var(--amber)':'inherit'}">${fmtDate(a.followup)}</div></div>` : ''}
+      </div>
+    </div>
+    ${a.notes ? `<div class="drawer-section"><div class="drawer-section-label">Notes</div><div style="font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap">${a.notes}</div></div>` : ''}
+    ${tl ? `<div class="drawer-section"><div class="drawer-section-label">Timeline</div><div class="timeline">${tl}</div></div>` : ''}
+    <div class="drawer-section">
+      <div class="drawer-section-label">Add Note to Timeline</div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="tl-note-inp" placeholder="e.g. Called recruiter, Sent follow-up..." style="flex:1">
+        <button class="btn btn-primary btn-sm" onclick="addTimelineNote(${a.id})">Add</button>
+      </div>
+    </div>
+  `;
+  Drawer.open('detail');
+}
+
+async function quickStatus(id, status) {
+  await API.patch('/api/applications/' + id + '/status', { status });
+  toast('Status → ' + status, 'success');
+  loadApps(); loadNavCounts();
+  openDetail(id);
+}
+
+async function deleteApp(id, name) {
+  if (!confirm(`Delete "${name}"?`)) return;
+  await API.delete('/api/applications/' + id);
+  toast('Deleted', 'info');
+  Drawer.close('detail');
+  loadApps(); loadNavCounts();
+}
+
+async function addTimelineNote(id) {
+  const inp = document.getElementById('tl-note-inp');
+  const note = inp.value.trim();
+  if (!note) return;
+  await API.post('/api/applications/' + id + '/timeline', { action: note });
+  inp.value = '';
+  toast('Note added', 'success');
+  openDetail(id);
+}
+
+window.refreshPage = loadApps;
+loadApps();
+
+// Auto-open from URL
+const openId = urlParams.get('open');
+if (openId) setTimeout(() => openDetail(parseInt(openId)), 400);
+</script>
+{% include 'partials/app_modal.html' %}
+{% endblock %}

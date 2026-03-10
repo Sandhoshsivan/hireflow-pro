@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Billing{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div class="topbar-title">Billing & Subscription<span class="topbar-subtitle">Manage your plan and view payment history</span></div>
+  <div class="topbar-actions">
+    <a href="/pricing" class="btn btn-primary">View Plans</a>
+  </div>
+</div>
+<div class="page-content">
+
+  <div class="grid-2">
+    <!-- Current Plan Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">📋</span> Current Plan</div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <div id="billing-plan-icon" style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-size:24px;color:white">⚡</div>
+          <div>
+            <div id="billing-plan-name" style="font-size:20px;font-weight:800">Free</div>
+            <div id="billing-plan-price" style="font-size:13px;color:var(--text2)">$0/month</div>
+          </div>
+        </div>
+        <div id="billing-usage" style="margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:6px">Usage</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden">
+              <div id="usage-bar" style="height:100%;background:var(--blue);border-radius:4px;transition:width .5s;width:0%"></div>
+            </div>
+            <span id="usage-text" class="text-xs font-mono" style="color:var(--text2)">0 / 5 apps</span>
+          </div>
+        </div>
+        <div id="billing-features" style="font-size:12px;color:var(--text2)"></div>
+        <div style="margin-top:16px">
+          <a href="/pricing" class="btn btn-primary btn-sm" id="billing-upgrade-btn">Upgrade Plan</a>
+          <button class="btn btn-ghost btn-sm" id="billing-downgrade-btn" style="display:none" onclick="doDowngrade()">Downgrade to Free</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">🧾</span> Payment History</div>
+      </div>
+      <div class="card-body" id="payment-history" style="max-height:320px;overflow-y:auto">
+        <div class="empty-state" style="padding:30px 0">
+          <div class="empty-icon">🧾</div>
+          <div class="empty-text">No payments yet</div>
+          <div class="empty-sub">Your payment history will appear here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stripe info banner -->
+  <div style="margin-top:24px;padding:16px 20px;background:var(--surf2);border:1px solid var(--border);border-radius:12px;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:10px">
+    <span style="font-size:18px">🔒</span>
+    <div>
+      <strong>Secure payments powered by Stripe</strong>
+      <div class="text-xs" style="margin-top:2px">All transactions are encrypted and processed securely. We never store your card details.</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const [me, history] = await Promise.all([
+      API.get('/api/auth/me'),
+      API.get('/api/billing/history'),
+    ]);
+
+    const plan = me.plan || 'free';
+    const limits = me.plan_limits || {};
+    const icons = { free: '⚡', pro: '🚀', premium: '👑' };
+    const prices = { free: '$0/month', pro: '$9/month', premium: '$19/month' };
+    const names = { free: 'Free', pro: 'Pro', premium: 'Premium' };
+
+    document.getElementById('billing-plan-icon').textContent = icons[plan] || '⚡';
+    document.getElementById('billing-plan-name').textContent = names[plan] || 'Free';
+    document.getElementById('billing-plan-price').textContent = prices[plan] || '$0/month';
+
+    // Usage bar
+    const count = me.app_count || 0;
+    const limit = limits.app_limit || 5;
+    const isUnlimited = limit > 1000;
+    const pct = isUnlimited ? Math.min(count, 100) : Math.min(count / limit * 100, 100);
+    document.getElementById('usage-bar').style.width = (isUnlimited ? Math.min(count * 2, 100) : pct) + '%';
+    document.getElementById('usage-bar').style.background = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--amber)' : 'var(--blue)';
+    document.getElementById('usage-text').textContent = isUnlimited ? `${count} apps (unlimited)` : `${count} / ${limit} apps`;
+
+    // Buttons
+    if (plan !== 'free') {
+      document.getElementById('billing-upgrade-btn').textContent = plan === 'pro' ? 'Upgrade to Premium' : 'Current: Premium';
+      if (plan === 'premium') document.getElementById('billing-upgrade-btn').style.display = 'none';
+      document.getElementById('billing-downgrade-btn').style.display = '';
+    }
+
+    // Features
+    const features = [];
+    if (limits.ai_assistant) features.push('AI Assistant');
+    if (limits.advanced_analytics) features.push('Advanced Analytics');
+    if (limits.csv_export) features.push('CSV Export');
+    if (limits.pipeline_view) features.push('Pipeline View');
+    if (limits.contacts) features.push('Contact Tracking');
+    if (limits.priority_support) features.push('Priority Support');
+    document.getElementById('billing-features').innerHTML = features.length
+      ? '<strong style="color:var(--text)">Active features:</strong> ' + features.join(', ')
+      : '<span style="color:var(--text3)">Upgrade to unlock AI, Analytics, Export & more</span>';
+
+    // Payment history
+    if (history && history.length) {
+      const ph = document.getElementById('payment-history');
+      ph.innerHTML = '<table class="data-table" style="font-size:12px"><thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead><tbody>' +
+        history.map(p => `<tr>
+          <td class="td-mono">${fmtDate(p.created_at)}</td>
+          <td><strong>${(names[p.plan] || p.plan)}</strong></td>
+          <td class="td-salary">$${p.amount}</td>
+          <td>${badge(p.status === 'completed' ? 'Offer' : 'Applied')}</td>
+        </tr>`).join('') + '</tbody></table>';
+    }
+  } catch(e) { console.error(e); }
+});
+
+async function doDowngrade() {
+  if (!confirm('Downgrade to Free? You will lose access to Pro/Premium features.')) return;
+  try {
+    await API.post('/api/billing/downgrade');
+    toast('Downgraded to Free', 'info');
+    setTimeout(() => location.reload(), 800);
+  } catch(e) {
+    toast(e.message || 'Failed', 'error');
+  }
+}
+</script>
+{% endblock %}

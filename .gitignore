@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+hireflow.db
+*.db-wal
+*.db-shm
+.DS_Store
+.vscode/
+*.log

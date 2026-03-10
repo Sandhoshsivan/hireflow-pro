@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}HireFlow Pro{% endblock %} — Job Tracker</title>
+<link rel="stylesheet" href="/static/css/main.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🚀</div>
+      <div>
+        <div class="logo-text">Hire<span>Flow</span><span class="logo-badge">PRO</span></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <a class="nav-item" href="/dashboard">
+          <span class="nav-icon">⚡</span> Dashboard
+        </a>
+        <a class="nav-item" href="/analytics">
+          <span class="nav-icon">📊</span> Analytics
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Applications</div>
+        <a class="nav-item" href="/applications">
+          <span class="nav-icon">📋</span> All Jobs
+          <span class="nav-badge" id="nav-cnt-all">—</span>
+        </a>
+        <a class="nav-item" href="/applications?status=Applied">
+          <span class="nav-icon">📨</span> Applied
+          <span class="nav-badge" id="nav-cnt-applied">—</span>
+        </a>
+        <a class="nav-item" href="/applications?status=Interview">
+          <span class="nav-icon">🎯</span> Interviews
+          <span class="nav-badge" id="nav-cnt-interview">—</span>
+        </a>
+        <a class="nav-item" href="/applications?status=Offer">
+          <span class="nav-icon">🎉</span> Offers
+          <span class="nav-badge" id="nav-cnt-offer">—</span>
+        </a>
+        <a class="nav-item" href="/pipeline">
+          <span class="nav-icon">🗂</span> Pipeline
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Tools</div>
+        <a class="nav-item" href="/ai-assistant">
+          <span class="nav-icon">🤖</span> AI Assistant
+        </a>
+        <a class="nav-item" href="/api/export/csv">
+          <span class="nav-icon">⬇</span> Export CSV
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Account</div>
+        <a class="nav-item" href="/pricing">
+          <span class="nav-icon">💎</span> Pricing
+        </a>
+        <a class="nav-item" href="/billing">
+          <span class="nav-icon">🧾</span> Billing
+        </a>
+      </div>
+
+      <!-- Admin section (hidden by default, shown via JS for admins) -->
+      <div class="nav-section" id="admin-nav" style="display:none">
+        <div class="nav-section-label" style="color:var(--red)">Admin</div>
+        <a class="nav-item" href="/admin">
+          <span class="nav-icon">🛡</span> Admin Dashboard
+        </a>
+        <a class="nav-item" href="/admin/users">
+          <span class="nav-icon">👥</span> Manage Users
+        </a>
+      </div>
+    </nav>
+
+    <!-- Follow-up alerts -->
+    <div id="sidebar-followups" style="padding:0 10px;display:none"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-card" id="user-card" onclick="document.getElementById('logout-menu').classList.toggle('open')">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div style="flex:1;min-width:0">
+          <div class="user-name" id="user-name">Loading...</div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <div class="user-role" id="user-role">—</div>
+            <span id="user-plan-badge" class="plan-badge-sm" style="display:none">FREE</span>
+          </div>
+        </div>
+        <span style="font-size:10px;color:var(--text3)">▼</span>
+      </div>
+      <div id="logout-menu" class="logout-menu">
+        <button class="btn btn-danger btn-sm" style="width:100%" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main-wrap">
+    <!-- Impersonation banner -->
+    <div id="impersonate-banner" style="display:none;background:linear-gradient(90deg,var(--amber),var(--red));color:white;padding:8px 20px;font-size:12px;font-weight:600;display:none;align-items:center;gap:10px">
+      <span>👤 You are impersonating another user.</span>
+      <button onclick="stopImpersonating()" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:4px 12px;font-size:11px">Switch Back to Admin</button>
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+
+</div>
+
+<div class="toast-wrap" id="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    loadNavCounts();
+    loadUserInfo();
+  });
+  async function loadUserInfo() {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (!res.ok) { window.location.href = '/login'; return; }
+      const u = await res.json();
+      document.getElementById('user-name').textContent = u.name;
+      document.getElementById('user-role').textContent = u.role_title || 'Job Seeker';
+      document.getElementById('user-avatar').textContent = (u.name || '?')[0].toUpperCase();
+      // Plan badge
+      const planEl = document.getElementById('user-plan-badge');
+      if (planEl && u.plan) {
+        const colors = { free: 'var(--text3)', pro: 'var(--blue)', premium: 'var(--violet)' };
+        const names = { free: 'FREE', pro: 'PRO', premium: 'PREMIUM' };
+        planEl.textContent = names[u.plan] || 'FREE';
+        planEl.style.color = colors[u.plan] || 'var(--text3)';
+        planEl.style.borderColor = colors[u.plan] || 'var(--text3)';
+        planEl.style.display = 'inline';
+      }
+      // Admin nav
+      if (u.is_admin) {
+        const adminNav = document.getElementById('admin-nav');
+        if (adminNav) adminNav.style.display = 'block';
+      }
+      // Impersonation banner
+      if (u.impersonating) {
+        const banner = document.getElementById('impersonate-banner');
+        if (banner) banner.style.display = 'flex';
+      }
+    } catch(e) {}
+  }
+  async function doLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+  async function stopImpersonating() {
+    try {
+      await fetch('/api/admin/stop-impersonating', { method: 'POST', headers: {'Content-Type':'application/json'} });
+      window.location.href = '/admin/users';
+    } catch(e) { alert('Failed to switch back'); }
+  }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

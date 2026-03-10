@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div class="topbar-title">Admin Dashboard<span class="topbar-subtitle">Platform overview & management</span></div>
+  <div class="topbar-actions">
+    <a href="/admin/users" class="btn btn-outline btn-sm">Manage Users</a>
+  </div>
+</div>
+<div class="page-content">
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi-card" style="--kc:var(--blue)">
+      <div class="kpi-num" id="k-users">—</div>
+      <div class="kpi-label">Total Users</div>
+      <div class="kpi-sub" id="k-users-sub"></div>
+    </div>
+    <div class="kpi-card" style="--kc:var(--green)">
+      <div class="kpi-num" id="k-revenue">—</div>
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-sub" id="k-payments-sub"></div>
+    </div>
+    <div class="kpi-card" style="--kc:var(--violet)">
+      <div class="kpi-num" id="k-apps">—</div>
+      <div class="kpi-label">Total Applications</div>
+      <div class="kpi-sub">Across all users</div>
+    </div>
+    <div class="kpi-card" style="--kc:var(--amber)">
+      <div class="kpi-num" id="k-payments">—</div>
+      <div class="kpi-label">Total Payments</div>
+      <div class="kpi-sub">Completed transactions</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Users by Plan -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">📊</span> Users by Plan</div>
+      </div>
+      <div class="card-body">
+        <div id="plan-chart" class="bar-chart"></div>
+      </div>
+    </div>
+
+    <!-- Applications by Status -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">📋</span> Applications by Status</div>
+      </div>
+      <div class="card-body">
+        <div id="status-chart" class="bar-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2 mt-4">
+    <!-- Recent Signups -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">🆕</span> Recent Signups</div>
+        <a href="/admin/users" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="card-body" style="padding:0;max-height:360px;overflow-y:auto">
+        <table class="data-table">
+          <thead><tr><th>User</th><th>Plan</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="recent-users"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Users -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">🏆</span> Top Users by Apps</div>
+      </div>
+      <div class="card-body" style="padding:0;max-height:360px;overflow-y:auto">
+        <table class="data-table">
+          <thead><tr><th>User</th><th>Apps</th><th>Plan</th><th>Status</th></tr></thead>
+          <tbody id="top-users"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Trend -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <div class="card-title"><span class="card-icon">💰</span> Revenue Trend (Monthly)</div>
+    </div>
+    <div class="card-body">
+      <div id="revenue-chart" class="bar-chart"></div>
+      <div id="revenue-empty" class="empty-state" style="display:none;padding:30px 0">
+        <div class="empty-icon">💰</div>
+        <div class="empty-text">No revenue data yet</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.admin-avatar {
+  width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:700;font-size:11px;flex-shrink:0;
+}
+.plan-pill {
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;
+}
+.plan-free { background:var(--bg2);color:var(--text3) }
+.plan-pro { background:var(--blue-lt);color:var(--blue) }
+.plan-premium { background:var(--violet-lt);color:var(--violet) }
+.status-blocked { color:var(--red);font-weight:600;font-size:11px }
+.status-active { color:var(--green);font-weight:600;font-size:11px }
+.status-admin { color:var(--violet);font-weight:600;font-size:11px }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const s = await API.get('/api/admin/stats');
+
+    // KPIs
+    document.getElementById('k-users').textContent = s.total_users;
+    document.getElementById('k-revenue').textContent = '$' + s.total_revenue.toFixed(0);
+    document.getElementById('k-apps').textContent = s.total_apps;
+    document.getElementById('k-payments').textContent = s.total_payments;
+    document.getElementById('k-users-sub').textContent = s.by_plan.map(p => `${p.cnt} ${p.plan}`).join(', ');
+    document.getElementById('k-payments-sub').textContent = s.total_payments + ' completed';
+
+    // Plan chart
+    const planMax = Math.max(...s.by_plan.map(p => p.cnt), 1);
+    const planColors = { free: 'var(--text3)', pro: 'var(--blue)', premium: 'var(--violet)' };
+    document.getElementById('plan-chart').innerHTML = s.by_plan.map(p => `
+      <div class="bar-row">
+        <div class="bar-label">${(p.plan||'free').charAt(0).toUpperCase()+(p.plan||'free').slice(1)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${p.cnt/planMax*100}%;background:${planColors[p.plan]||'var(--blue)'}">${p.cnt}</div></div>
+        <div class="bar-pct">${p.cnt}</div>
+      </div>`).join('');
+
+    // Status chart
+    const statusMax = Math.max(...s.by_status.map(p => p.cnt), 1);
+    const statusColors = { Applied:'var(--blue)', Interview:'var(--amber)', Offer:'var(--green)',
+                           Rejected:'var(--red)', Ghosted:'var(--text3)', Saved:'var(--cyan)' };
+    document.getElementById('status-chart').innerHTML = s.by_status.map(p => `
+      <div class="bar-row">
+        <div class="bar-label">${p.status}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${p.cnt/statusMax*100}%;background:${statusColors[p.status]||'var(--blue)'}">${p.cnt}</div></div>
+        <div class="bar-pct">${p.cnt}</div>
+      </div>`).join('');
+
+    // Recent users
+    document.getElementById('recent-users').innerHTML = s.recent_users.map(u => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="admin-avatar" style="background:${avatarColor(u.name)}">${u.name[0].toUpperCase()}</div>
+            <div>
+              <div style="font-weight:600;font-size:12px">${u.name}${u.is_admin?' <span class="status-admin">ADMIN</span>':''}</div>
+              <div class="text-xs text-muted">${u.email}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="plan-pill plan-${u.plan||'free'}">${u.plan||'free'}</span></td>
+        <td class="td-mono">${fmtDate(u.created_at)}</td>
+        <td>
+          <a href="/admin/users?open=${u.id}" class="btn btn-ghost btn-sm">View</a>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="4" class="text-muted text-xs" style="padding:16px;text-align:center">No users yet</td></tr>';
+
+    // Top users
+    document.getElementById('top-users').innerHTML = s.top_users.map(u => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="admin-avatar" style="background:${avatarColor(u.name)}">${u.name[0].toUpperCase()}</div>
+            <div>
+              <div style="font-weight:600;font-size:12px">${u.name}</div>
+              <div class="text-xs text-muted">${u.email}</div>
+            </div>
+          </div>
+        </td>
+        <td><strong>${u.app_count}</strong></td>
+        <td><span class="plan-pill plan-${u.plan||'free'}">${u.plan||'free'}</span></td>
+        <td>${u.is_blocked?'<span class="status-blocked">Blocked</span>':
+             u.is_admin?'<span class="status-admin">Admin</span>':
+             '<span class="status-active">Active</span>'}</td>
+      </tr>`).join('');
+
+    // Revenue chart
+    if (s.revenue_trend.length) {
+      const revMax = Math.max(...s.revenue_trend.map(r => r.total), 1);
+      document.getElementById('revenue-chart').innerHTML = s.revenue_trend.map(r => `
+        <div class="bar-row">
+          <div class="bar-label">${r.month}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${r.total/revMax*100}%;background:var(--green)">$${r.total}</div></div>
+          <div class="bar-pct">${r.cnt} txn</div>
+        </div>`).join('');
+    } else {
+      document.getElementById('revenue-chart').style.display = 'none';
+      document.getElementById('revenue-empty').style.display = 'block';
+    }
+
+  } catch(e) { console.error(e); toast('Failed to load admin data', 'error'); }
+});
+</script>
+{% endblock %}

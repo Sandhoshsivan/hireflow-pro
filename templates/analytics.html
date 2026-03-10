@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <span class="topbar-title">Analytics</span>
+  <span class="topbar-subtitle">Track your job search performance</span>
+</div>
+<div class="page-content">
+
+  <div class="kpi-grid mb-4" id="a-kpis"></div>
+
+  <div class="grid-2 mb-4">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="card-icon">📊</span> Status Breakdown</div></div>
+      <div class="card-body"><div class="bar-chart" id="status-chart"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="card-icon">📡</span> Application Sources</div></div>
+      <div class="card-body"><div class="bar-chart" id="source-chart2"></div></div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-4">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="card-icon">📅</span> Monthly Volume</div></div>
+      <div class="card-body"><div class="bar-chart" id="trend-chart"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="card-icon">🎯</span> Priority Distribution</div></div>
+      <div class="card-body" id="priority-chart"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="card-icon">💡</span> AI Insights</div></div>
+    <div class="card-body" id="insights-panel">
+      <div style="color:var(--text3);font-size:13px">Loading insights…</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function makeBar(label, val, maxVal, color) {
+  const pct = maxVal ? Math.round(val / maxVal * 100) : 0;
+  return `<div class="bar-row">
+    <div class="bar-label">${label}</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(val/maxVal)*100||0}%;background:${color}">${val}</div></div>
+    <div class="bar-pct">${pct}%</div>
+  </div>`;
+}
+
+async function loadAnalytics() {
+  const stats = await API.get('/api/stats');
+  const apps  = await API.get('/api/applications');
+
+  // KPIs
+  const avgDays = apps.filter(a=>a.date_applied).reduce((s,a)=>{
+    return s + Math.floor((Date.now()-new Date(a.date_applied))/86400000);
+  }, 0) / (apps.length || 1);
+
+  document.getElementById('a-kpis').innerHTML = [
+    {n: stats.total,           l:'Total Applications', c:'var(--blue)',   s:'All time'},
+    {n: stats.response_rate+'%', l:'Response Rate',    c:'var(--violet)', s: stats.response_rate > 20 ? '🔥 Above avg' : '⬆ Aim 20%+'},
+    {n: stats.interview,       l:'Active Interviews',  c:'var(--amber)',  s:'In pipeline'},
+    {n: stats.offer,           l:'Total Offers',       c:'var(--green)',  s:'💰 Negotiate!'},
+    {n: Math.round(avgDays)+'d', l:'Avg App Age',      c:'var(--text2)',  s:'Since applied'},
+  ].map(k => `
+    <div class="kpi-card" style="--kc:${k.c}">
+      <div class="kpi-num">${k.n}</div>
+      <div class="kpi-label">${k.l}</div>
+      <div class="kpi-sub">${k.s}</div>
+    </div>`).join('');
+
+  // Status chart
+  const statuses = [
+    {s:'Applied', c:'var(--blue)'}, {s:'Interview', c:'var(--amber)'},
+    {s:'Offer', c:'var(--green)'}, {s:'Rejected', c:'var(--red)'},
+    {s:'Ghosted', c:'var(--text3)'}, {s:'Saved', c:'var(--cyan)'}
+  ];
+  const maxSt = Math.max(...statuses.map(s=>(stats.by_status[s.s]||0)), 1);
+  document.getElementById('status-chart').innerHTML = statuses
+    .map(s => makeBar(s.s, stats.by_status[s.s]||0, maxSt, s.c)).join('');
+
+  // Source chart
+  const maxSrc = Math.max(...(stats.sources||[]).map(s=>s.cnt), 1);
+  document.getElementById('source-chart2').innerHTML = (stats.sources||[]).map(s =>
+    makeBar(s.source||'Other', s.cnt, maxSrc, 'var(--blue)')).join('') || '<div style="color:var(--text3);font-size:12px">No data</div>';
+
+  // Trend
+  const trend = [...(stats.trend||[])].reverse();
+  const maxT = Math.max(...trend.map(t=>t.cnt), 1);
+  document.getElementById('trend-chart').innerHTML = trend.map(t =>
+    makeBar(t.month, t.cnt, maxT, 'var(--violet)')).join('') || '<div style="color:var(--text3);font-size:12px">No monthly data yet</div>';
+
+  // Priority
+  const prios = {high:0, medium:0, low:0};
+  apps.forEach(a => { prios[a.priority||'medium']++; });
+  const maxP = Math.max(...Object.values(prios), 1);
+  document.getElementById('priority-chart').innerHTML = `<div class="bar-chart">
+    ${makeBar('🔴 High',   prios.high,   maxP, 'var(--red)')}
+    ${makeBar('🟡 Medium', prios.medium, maxP, 'var(--amber)')}
+    ${makeBar('🟢 Low',    prios.low,    maxP, 'var(--green)')}
+  </div>`;
+
+  // Insights
+  const rr = stats.response_rate;
+  const insights = [];
+  if (stats.total === 0) insights.push({ icon:'💡', text:'Start tracking applications to see insights!' });
+  if (stats.ghosted > stats.interview && stats.total > 3)
+    insights.push({ icon:'👻', text:`${stats.ghosted} applications ghosted vs ${stats.interview} interviews. Consider improving your CV headline and summary to increase initial response rate.` });
+  if (rr < 10 && stats.total > 5)
+    insights.push({ icon:'📈', text:`Response rate is ${rr}% — below the 15-20% industry average. Try cold LinkedIn outreach in addition to job boards.` });
+  if ((stats.by_status['Saved']||0) > 3)
+    insights.push({ icon:'🔖', text:`You have ${stats.by_status['Saved']||0} saved jobs — consider applying to them before they expire!` });
+  const topSrc = stats.sources?.[0];
+  if (topSrc)
+    insights.push({ icon:'📡', text:`Your top source is <b>${topSrc.source}</b> with ${topSrc.cnt} applications. Diversify to referrals and company websites for higher conversion.` });
+  if (stats.interview > 0 && stats.offer === 0)
+    insights.push({ icon:'🎯', text:`${stats.interview} active interview(s) and 0 offers — focus on interview prep. Practice system design + CQRS patterns.` });
+  if (stats.offer > 0)
+    insights.push({ icon:'🎉', text:`${stats.offer} offer(s) received! Research market salaries for .NET backend in UAE (AED 18–25k) and India (₹25–35 LPA) before negotiating.` });
+
+  document.getElementById('insights-panel').innerHTML = insights.length
+    ? insights.map(i => `<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:20px;flex-shrink:0">${i.icon}</span>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">${i.text}</div>
+      </div>`).join('')
+    : `<div style="color:var(--text3);font-size:13px">Add more applications to generate insights.</div>`;
+}
+
+loadAnalytics();
+</script>
+{% endblock %}

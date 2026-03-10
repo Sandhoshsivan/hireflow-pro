@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Pricing{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div class="topbar-title">Pricing<span class="topbar-subtitle">Choose the plan that fits your job search</span></div>
+</div>
+<div class="page-content">
+
+  <!-- Current plan banner -->
+  <div id="current-plan-banner" class="plan-banner" style="display:none">
+    <span id="plan-banner-icon">⚡</span>
+    <div>
+      <strong id="plan-banner-text">You are on the Free plan</strong>
+      <div id="plan-banner-sub" class="text-xs text-muted">Upgrade to unlock all features</div>
+    </div>
+  </div>
+
+  <!-- Pricing toggle -->
+  <div style="text-align:center;margin-bottom:28px">
+    <span class="text-sm text-muted">Simple, transparent pricing. Cancel anytime.</span>
+  </div>
+
+  <!-- Plan cards -->
+  <div class="pricing-grid">
+
+    <!-- FREE -->
+    <div class="pricing-card" id="plan-free">
+      <div class="pricing-header">
+        <div class="pricing-name">Free</div>
+        <div class="pricing-price"><span class="pricing-amount">$0</span><span class="pricing-period">/forever</span></div>
+        <div class="pricing-desc">Get started with basic tracking</div>
+      </div>
+      <div class="pricing-features">
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Up to 5 applications</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Dashboard overview</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Status tracking</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Follow-up reminders</div>
+        <div class="pf-item pf-no"><span class="pf-icon">&#10005;</span> AI Career Assistant</div>
+        <div class="pf-item pf-no"><span class="pf-icon">&#10005;</span> Advanced Analytics</div>
+        <div class="pf-item pf-no"><span class="pf-icon">&#10005;</span> Pipeline / Kanban view</div>
+        <div class="pf-item pf-no"><span class="pf-icon">&#10005;</span> CSV Export</div>
+        <div class="pf-item pf-no"><span class="pf-icon">&#10005;</span> Contact tracking</div>
+      </div>
+      <div class="pricing-footer">
+        <button class="btn btn-outline pricing-btn" id="btn-free" disabled>Current Plan</button>
+      </div>
+    </div>
+
+    <!-- PRO -->
+    <div class="pricing-card pricing-popular" id="plan-pro">
+      <div class="pricing-badge-pop">MOST POPULAR</div>
+      <div class="pricing-header">
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-price"><span class="pricing-amount">$9</span><span class="pricing-period">/month</span></div>
+        <div class="pricing-desc">Everything you need to land your dream job</div>
+      </div>
+      <div class="pricing-features">
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> <strong>Unlimited</strong> applications</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Dashboard overview</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Status tracking</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Follow-up reminders</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> AI Career Assistant</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Advanced Analytics</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Pipeline / Kanban view</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> CSV Export</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Contact tracking</div>
+      </div>
+      <div class="pricing-footer">
+        <button class="btn btn-primary pricing-btn" id="btn-pro" onclick="checkout('pro')">Upgrade to Pro</button>
+      </div>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="pricing-card" id="plan-premium">
+      <div class="pricing-header">
+        <div class="pricing-name">Premium</div>
+        <div class="pricing-price"><span class="pricing-amount">$19</span><span class="pricing-period">/month</span></div>
+        <div class="pricing-desc">For serious job seekers & career changers</div>
+      </div>
+      <div class="pricing-features">
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Everything in Pro</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> <strong>Priority</strong> support</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Early access to features</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Resume review (coming soon)</div>
+        <div class="pf-item pf-yes"><span class="pf-icon">&#10003;</span> Interview coaching (coming soon)</div>
+      </div>
+      <div class="pricing-footer">
+        <button class="btn btn-outline pricing-btn" id="btn-premium" onclick="checkout('premium')" style="border-color:var(--violet);color:var(--violet)">Upgrade to Premium</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAQ -->
+  <div style="max-width:640px;margin:48px auto 0">
+    <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;text-align:center">Frequently Asked Questions</h3>
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel anytime?</div>
+      <div class="faq-a">Yes! You can downgrade to Free at any time from your billing settings. No questions asked.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What happens to my data if I downgrade?</div>
+      <div class="faq-a">Your data is never deleted. On the Free plan, you can still view all applications but can't add new ones beyond the limit.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do you offer a free trial?</div>
+      <div class="faq-a">The Free plan is your trial! Use it as long as you want. Upgrade when you need more power.</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.plan-banner {
+  display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+  background: var(--blue-lt); border: 1px solid var(--blue-md); border-radius: 12px;
+  margin-bottom: 24px; font-size: 13px;
+}
+.plan-banner span:first-child { font-size: 22px; }
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  max-width: 960px; margin: 0 auto;
+}
+.pricing-card {
+  background: var(--white); border: 2px solid var(--border); border-radius: 16px;
+  display: flex; flex-direction: column; overflow: hidden; transition: all .2s;
+  position: relative;
+}
+.pricing-card:hover { border-color: var(--blue-md); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.pricing-popular { border-color: var(--blue); box-shadow: 0 8px 30px rgba(37,99,235,.15); }
+.pricing-popular:hover { border-color: var(--blue-dk); }
+.pricing-badge-pop {
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--blue); color: white; font-size: 10px; font-weight: 800;
+  letter-spacing: 1px; padding: 4px 14px; border-radius: 0 0 8px 8px;
+}
+.pricing-header { padding: 32px 24px 20px; text-align: center; }
+.pricing-name { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.pricing-amount { font-size: 42px; font-weight: 800; letter-spacing: -2px; }
+.pricing-period { font-size: 14px; color: var(--text3); font-weight: 500; }
+.pricing-desc { font-size: 12px; color: var(--text2); margin-top: 8px; }
+.pricing-features { padding: 0 24px 20px; flex: 1; }
+.pf-item { font-size: 13px; padding: 7px 0; display: flex; align-items: center; gap: 8px; }
+.pf-icon { width: 18px; text-align: center; font-weight: 700; flex-shrink: 0; }
+.pf-yes { color: var(--text); }
+.pf-yes .pf-icon { color: var(--green); }
+.pf-no { color: var(--text3); }
+.pf-no .pf-icon { color: var(--text4); }
+.pricing-footer { padding: 16px 24px 28px; }
+.pricing-btn { width: 100%; justify-content: center; padding: 12px; font-size: 14px; border-radius: 10px; }
+.pricing-card.is-current { border-color: var(--green); }
+.pricing-card.is-current .pricing-name::after {
+  content: ' (Current)'; font-size: 11px; color: var(--green); font-weight: 600;
+}
+.faq-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
+.faq-q { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.faq-a { font-size: 13px; color: var(--text2); line-height: 1.6; }
+</style>
+<script>
+let currentPlan = 'free';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const me = await API.get('/api/auth/me');
+    currentPlan = me.plan || 'free';
+    updatePricingUI(currentPlan);
+  } catch(e) {}
+});
+
+function updatePricingUI(plan) {
+  // Banner
+  const banner = document.getElementById('current-plan-banner');
+  banner.style.display = 'flex';
+  const names = { free: 'Free', pro: 'Pro', premium: 'Premium' };
+  const icons = { free: '⚡', pro: '🚀', premium: '👑' };
+  document.getElementById('plan-banner-icon').textContent = icons[plan] || '⚡';
+  document.getElementById('plan-banner-text').textContent = `You are on the ${names[plan] || 'Free'} plan`;
+  document.getElementById('plan-banner-sub').textContent = plan === 'free' ? 'Upgrade to unlock all features' : (plan === 'pro' ? 'Enjoying Pro features!' : 'You have full access to everything!');
+
+  // Mark current card
+  document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('is-current'));
+  const cur = document.getElementById('plan-' + plan);
+  if (cur) cur.classList.add('is-current');
+
+  // Buttons
+  const btnFree = document.getElementById('btn-free');
+  const btnPro = document.getElementById('btn-pro');
+  const btnPremium = document.getElementById('btn-premium');
+
+  if (plan === 'free') {
+    btnFree.textContent = 'Current Plan'; btnFree.disabled = true;
+    btnPro.textContent = 'Upgrade to Pro'; btnPro.disabled = false;
+    btnPremium.textContent = 'Upgrade to Premium'; btnPremium.disabled = false;
+  } else if (plan === 'pro') {
+    btnFree.textContent = 'Downgrade'; btnFree.disabled = false; btnFree.onclick = () => downgrade();
+    btnPro.textContent = 'Current Plan'; btnPro.disabled = true;
+    btnPremium.textContent = 'Upgrade to Premium'; btnPremium.disabled = false;
+  } else {
+    btnFree.textContent = 'Downgrade'; btnFree.disabled = false; btnFree.onclick = () => downgrade();
+    btnPro.textContent = 'Downgrade to Pro'; btnPro.disabled = false; btnPro.onclick = () => checkout('pro');
+    btnPremium.textContent = 'Current Plan'; btnPremium.disabled = true;
+  }
+}
+
+async function checkout(plan) {
+  const btn = document.getElementById('btn-' + plan);
+  const orig = btn.textContent;
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+  try {
+    const res = await API.post('/api/billing/checkout', { plan });
+    toast(res.message, 'success');
+    currentPlan = plan;
+    updatePricingUI(plan);
+  } catch(e) {
+    toast(e.message || 'Checkout failed', 'error');
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+async function downgrade() {
+  if (!confirm('Are you sure you want to downgrade to the Free plan? You will lose access to Pro features.')) return;
+  try {
+    await API.post('/api/billing/downgrade');
+    toast('Downgraded to Free plan', 'info');
+    currentPlan = 'free';
+    updatePricingUI('free');
+  } catch(e) {
+    toast(e.message || 'Failed to downgrade', 'error');
+  }
+}
+</script>
+{% endblock %}

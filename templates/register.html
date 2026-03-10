@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — HireFlow Pro</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body class="auth-body">
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🚀</div>
+      <div class="logo-text">Hire<span>Flow</span><span class="logo-badge">PRO</span></div>
+    </div>
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-subtitle">Start tracking your job applications today</p>
+
+    <div id="auth-error" class="auth-error" style="display:none"></div>
+
+    <form id="register-form" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="name" class="form-input" placeholder="John Doe" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="password" class="form-input" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Role (optional)</label>
+        <input type="text" id="role_title" class="form-input" placeholder="e.g. Backend Developer, Student">
+      </div>
+      <button type="submit" class="btn btn-primary auth-btn" id="submit-btn">
+        <span id="btn-text">Create Account</span>
+        <span id="btn-loading" style="display:none">Creating...</span>
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="/login" class="auth-link">Sign in</a>
+    </p>
+  </div>
+</div>
+
+<script>
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('auth-error');
+  const btn = document.getElementById('submit-btn');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  document.getElementById('btn-text').style.display = 'none';
+  document.getElementById('btn-loading').style.display = 'inline';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        role_title: document.getElementById('role_title').value,
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error;
+      errEl.style.display = 'block';
+    } else {
+      window.location.href = '/dashboard';
+    }
+  } catch (err) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btn-text').style.display = 'inline';
+    document.getElementById('btn-loading').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
