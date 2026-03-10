@@ -1,24 +1,26 @@
 services:
   - type: web
     name: hireflow-pro
-    runtime: python
+    runtime: docker
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    rootDir: HireFlowPro
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: FLASK_ENV
-        value: production
-      - key: SECRET_KEY
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Jwt__Key
         generateValue: true
+      - key: Jwt__Issuer
+        value: HireFlowPro
+      - key: Jwt__Audience
+        value: HireFlowPro
       - key: DATABASE_URL
         fromDatabase:
           name: hireflow-db
           property: connectionString
-      - key: PYTHON_VERSION
-        value: "3.11.0"
 
 databases:
   - name: hireflow-db
     plan: free
-    databaseName: hireflow
+    databaseName: hireflow_pro
     user: hireflow
