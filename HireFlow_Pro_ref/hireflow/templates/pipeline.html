@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Pipeline{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <span class="topbar-title">Pipeline</span>
+  <div class="topbar-actions">
+    <button class="btn btn-primary" onclick="openAddModal()"><span>＋</span> Track Job</button>
+  </div>
+</div>
+<div class="page-content" style="overflow-x:auto;overflow-y:hidden;height:calc(100vh - var(--topbar-h));display:flex;flex-direction:column">
+  <div class="kanban-wrap" id="kanban-board" style="flex:1"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const COLS = [
+  {s:'Saved',    c:'var(--cyan)',   bg:'var(--cyan-lt)'},
+  {s:'Applied',  c:'var(--blue)',   bg:'var(--blue-lt)'},
+  {s:'Interview',c:'var(--amber)',  bg:'var(--amber-lt)'},
+  {s:'Offer',    c:'var(--green)',  bg:'var(--green-lt)'},
+  {s:'Rejected', c:'var(--red)',    bg:'var(--red-lt)'},
+];
+
+async function loadKanban() {
+  const apps = await API.get('/api/applications');
+  const board = document.getElementById('kanban-board');
+  board.innerHTML = COLS.map(col => {
+    const items = apps.filter(a => a.status === col.s);
+    return `
+    <div class="kan-col">
+      <div class="kan-col-header">
+        <div class="kan-col-title" style="color:${col.c}">${col.s}</div>
+        <span class="kan-col-count">${items.length}</span>
+      </div>
+      ${items.map(a => `
+        <div class="kan-card" onclick="window.location='/applications?open=${a.id}'">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+            <div class="kan-card-co truncate">${a.company}</div>
+            ${pDot(a.priority)}
+          </div>
+          <div class="kan-card-role">${a.role}</div>
+          ${a.location ? `<div style="font-size:10px;color:var(--text3);margin-top:4px">📍 ${a.location}</div>` : ''}
+          <div class="kan-card-foot">
+            <div class="kan-card-sal">${a.salary || ''}</div>
+            <div class="kan-card-date">${fmtDate(a.date_applied)}</div>
+          </div>
+          ${a.followup && new Date(a.followup) <= new Date() ?
+            `<div style="margin-top:8px;font-size:10px;background:var(--amber-lt);color:var(--amber);border-radius:4px;padding:2px 7px;display:inline-block;font-weight:600">⏰ Follow-up due</div>` : ''}
+        </div>
+      `).join('')}
+      ${!items.length ? `<div style="text-align:center;padding:20px 10px;color:var(--text3);font-size:12px;border:1px dashed var(--border);border-radius:var(--radius);margin-top:4px">Empty</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+window.refreshPage = loadKanban;
+loadKanban();
+</script>
+{% include 'partials/app_modal.html' %}
+{% endblock %}

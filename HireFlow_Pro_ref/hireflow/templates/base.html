@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}HireFlow Pro{% endblock %} — Job Tracker</title>
+<link rel="stylesheet" href="/static/css/main.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🚀</div>
+      <div>
+        <div class="logo-text">Hire<span>Flow</span><span class="logo-badge">PRO</span></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <a class="nav-item" href="/dashboard">
+          <span class="nav-icon">⚡</span> Dashboard
+        </a>
+        <a class="nav-item" href="/analytics">
+          <span class="nav-icon">📊</span> Analytics
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Applications</div>
+        <a class="nav-item" href="/applications">
+          <span class="nav-icon">📋</span> All Jobs
+          <span class="nav-badge" id="nav-cnt-all">—</span>
+        </a>
+        <a class="nav-item" href="/applications?status=Applied">
+          <span class="nav-icon">📨</span> Applied
+          <span class="nav-badge" id="nav-cnt-applied">—</span>
+        </a>
+        <a class="nav-item" href="/applications?status=Interview">
+          <span class="nav-icon">🎯</span> Interviews
+          <span class="nav-badge" id="nav-cnt-interview">—</span>
+        </a>
+        <a class="nav-item" href="/applications?status=Offer">
+          <span class="nav-icon">🎉</span> Offers
+          <span class="nav-badge" id="nav-cnt-offer">—</span>
+        </a>
+        <a class="nav-item" href="/pipeline">
+          <span class="nav-icon">🗂</span> Pipeline
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Tools</div>
+        <a class="nav-item" href="/ai-assistant">
+          <span class="nav-icon">🤖</span> AI Assistant
+        </a>
+        <a class="nav-item" href="/api/export/csv">
+          <span class="nav-icon">⬇</span> Export CSV
+        </a>
+      </div>
+    </nav>
+
+    <!-- Follow-up alerts -->
+    <div id="sidebar-followups" style="padding:0 10px;display:none"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">S</div>
+        <div>
+          <div class="user-name">Sandhoshsivan M</div>
+          <div class="user-role">Backend Developer</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main-wrap">
+    {% block content %}{% endblock %}
+  </div>
+
+</div>
+
+<div class="toast-wrap" id="toast-container"></div>
+<script src="/static/js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', loadNavCounts);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
