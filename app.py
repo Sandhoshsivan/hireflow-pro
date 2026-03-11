@@ -1257,8 +1257,205 @@ def admin_reset_password(uid):
     return jsonify({'message': 'Password has been reset'})
 
 # ── Entry Point ───────────────────────────────────────────────────────────────
+def seed_demo_data():
+    """Seed demo accounts and sample applications on first run."""
+    with app.app_context():
+        existing = db_fetchone("SELECT id FROM users LIMIT 1")
+        if existing:
+            logger.info("Database already has users — skipping seed.")
+            return
+
+        logger.info("Seeding demo data...")
+        today = date.today()
+        admin_val = True if IS_POSTGRES else 1
+
+        # ── Account 1: Super Admin ───────────────────────────────────────
+        db_execute(
+            "INSERT INTO users (name, email, password, role_title, plan, is_admin) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            ("Super Admin", "admin@hireflowpro.com", hash_password("Admin@123!"),
+             "Platform Administrator", "premium", admin_val)
+        )
+        db_commit()
+
+        # ── Account 2: Demo User ─────────────────────────────────────────
+        db_execute(
+            "INSERT INTO users (name, email, password, role_title, plan, is_admin) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            ("Demo User", "demo@hireflowpro.com", hash_password("Demo@123!"),
+             "Software Engineer", "pro", admin_val)
+        )
+        db_commit()
+
+        demo_user = db_fetchone("SELECT id FROM users WHERE email=%s", ("demo@hireflowpro.com",))
+        demo_uid = demo_user['id']
+
+        # ── 12 Demo Applications ─────────────────────────────────────────
+        apps = [
+            {
+                "company": "Google", "role": "Senior Frontend Engineer", "status": "Interview",
+                "salary": "$185,000", "source": "LinkedIn", "location": "Mountain View, CA",
+                "priority": "high", "date_applied": (today - timedelta(days=25)).isoformat(),
+                "followup": (today + timedelta(days=3)).isoformat(),
+                "notes": "Had phone screen with recruiter. On-site scheduled.", "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via LinkedIn"),
+                    ("Phone Screen", "Phone screen completed with recruiter"),
+                    ("Interview Scheduled", "On-site interview scheduled"),
+                ]
+            },
+            {
+                "company": "Stripe", "role": "Full Stack Developer", "status": "Applied",
+                "salary": "$170,000", "source": "Company Website", "location": "San Francisco, CA",
+                "priority": "high", "date_applied": (today - timedelta(days=10)).isoformat(),
+                "followup": None, "notes": "Referred by college friend who works there.",
+                "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via company website with referral"),
+                ]
+            },
+            {
+                "company": "Vercel", "role": "Software Engineer", "status": "Offer",
+                "salary": "$175,000", "source": "Twitter", "location": "Remote",
+                "priority": "high", "date_applied": (today - timedelta(days=30)).isoformat(),
+                "followup": None, "notes": "Received offer! Need to negotiate equity.",
+                "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied after seeing post on Twitter"),
+                    ("Interview", "Technical interview completed"),
+                    ("Offer Received", "Offer received — reviewing compensation package"),
+                ]
+            },
+            {
+                "company": "Notion", "role": "Frontend Developer", "status": "Interview",
+                "salary": "$160,000", "source": "LinkedIn", "location": "New York, NY",
+                "priority": "medium", "date_applied": (today - timedelta(days=15)).isoformat(),
+                "followup": (today + timedelta(days=5)).isoformat(), "notes": "",
+                "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via LinkedIn"),
+                    ("Interview Scheduled", "First round interview scheduled"),
+                ]
+            },
+            {
+                "company": "Figma", "role": "UI Engineer", "status": "Applied",
+                "salary": "$155,000", "source": "Glassdoor", "location": "San Francisco, CA",
+                "priority": "medium", "date_applied": (today - timedelta(days=7)).isoformat(),
+                "followup": None, "notes": "", "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via Glassdoor"),
+                ]
+            },
+            {
+                "company": "Anthropic", "role": "ML Engineer", "status": "Interview",
+                "salary": "$200,000", "source": "Referral", "location": "San Francisco, CA",
+                "priority": "high", "date_applied": (today - timedelta(days=20)).isoformat(),
+                "followup": (today + timedelta(days=2)).isoformat(),
+                "notes": "Technical interview went well. Waiting for final round.",
+                "job_url": "",
+                "timeline": [
+                    ("Applied", "Referred by a colleague"),
+                    ("Phone Screen", "Initial call with hiring manager"),
+                    ("Technical Interview", "Technical interview went well"),
+                ]
+            },
+            {
+                "company": "Discord", "role": "React Developer", "status": "Rejected",
+                "salary": "$145,000", "source": "LinkedIn", "location": "San Francisco, CA",
+                "priority": "low", "date_applied": (today - timedelta(days=35)).isoformat(),
+                "followup": None, "notes": "Position filled internally.", "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via LinkedIn"),
+                    ("Rejected", "Rejected — position filled internally"),
+                ]
+            },
+            {
+                "company": "Shopify", "role": "Full Stack Engineer", "status": "Ghosted",
+                "salary": "$150,000", "source": "Indeed", "location": "Remote",
+                "priority": "medium", "date_applied": (today - timedelta(days=40)).isoformat(),
+                "followup": None, "notes": "", "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via Indeed"),
+                ]
+            },
+            {
+                "company": "Netflix", "role": "Senior UI Developer", "status": "Saved",
+                "salary": "$190,000", "source": "LinkedIn", "location": "Los Gatos, CA",
+                "priority": "high", "date_applied": (today - timedelta(days=2)).isoformat(),
+                "followup": None, "notes": "", "job_url": "",
+                "timeline": [
+                    ("Saved", "Saved job listing for later"),
+                ]
+            },
+            {
+                "company": "Meta", "role": "Production Engineer", "status": "Applied",
+                "salary": "$180,000", "source": "Company Website", "location": "Menlo Park, CA",
+                "priority": "medium", "date_applied": (today - timedelta(days=5)).isoformat(),
+                "followup": None, "notes": "", "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via company careers page"),
+                ]
+            },
+            {
+                "company": "Datadog", "role": "Frontend Engineer", "status": "Interview",
+                "salary": "$165,000", "source": "Referral", "location": "New York, NY",
+                "priority": "medium", "date_applied": (today - timedelta(days=12)).isoformat(),
+                "followup": (today + timedelta(days=7)).isoformat(), "notes": "",
+                "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via employee referral"),
+                    ("Interview Scheduled", "First round interview scheduled"),
+                ]
+            },
+            {
+                "company": "Coinbase", "role": "Software Engineer", "status": "Rejected",
+                "salary": "$170,000", "source": "LinkedIn", "location": "Remote",
+                "priority": "low", "date_applied": (today - timedelta(days=45)).isoformat(),
+                "followup": None, "notes": "", "job_url": "",
+                "timeline": [
+                    ("Applied", "Applied via LinkedIn"),
+                    ("Rejected", "Rejected after initial screening"),
+                ]
+            },
+        ]
+
+        for a in apps:
+            if IS_POSTGRES:
+                cur = db_execute(
+                    "INSERT INTO applications "
+                    "(user_id, company, role, status, salary, source, location, priority, "
+                    "date_applied, followup, notes, job_url) "
+                    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+                    (demo_uid, a["company"], a["role"], a["status"], a["salary"],
+                     a["source"], a["location"], a["priority"], a["date_applied"],
+                     a["followup"], a["notes"], a["job_url"])
+                )
+                app_id = cur.fetchone()['id']
+            else:
+                cur = db_execute(
+                    "INSERT INTO applications "
+                    "(user_id, company, role, status, salary, source, location, priority, "
+                    "date_applied, followup, notes, job_url) "
+                    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (demo_uid, a["company"], a["role"], a["status"], a["salary"],
+                     a["source"], a["location"], a["priority"], a["date_applied"],
+                     a["followup"], a["notes"], a["job_url"])
+                )
+                app_id = cur.lastrowid
+
+            for action, note in a["timeline"]:
+                db_execute(
+                    "INSERT INTO timeline (app_id, action, note) VALUES (%s, %s, %s)",
+                    (app_id, action, note)
+                )
+
+        db_commit()
+        logger.info("Demo data seeded: 2 users, 12 applications with timeline entries.")
+
+
 if __name__ == '__main__':
     init_db()
+    seed_demo_data()
     port = int(os.environ.get('PORT', 5001))
     debug = os.environ.get('FLASK_ENV') != 'production'
     logger.info(f"HireFlow Pro starting on port {port} (debug={debug})")

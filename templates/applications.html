@@ -8,24 +8,39 @@
     <span class="topbar-subtitle" id="app-count-lbl"></span>
   </div>
   <div class="topbar-actions">
-    <div class="filter-bar">
+    <!-- Filter bar wrapped in styled container -->
+    <div class="filter-bar-container">
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input class="form-input search-input" id="search-inp" placeholder="Search company, role..." style="width:220px" oninput="loadApps()">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input class="form-input search-input"
+               id="search-inp"
+               placeholder="Search company, role..."
+               style="width:200px;background:var(--white)"
+               oninput="loadApps()">
       </div>
-      <select class="form-select" id="status-filter" style="width:130px" onchange="loadApps()">
+      <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
+      <select class="form-select" id="status-filter" style="width:126px;background:var(--white)" onchange="loadApps()">
         <option value="">All Status</option>
-        <option>Saved</option><option>Applied</option><option>Interview</option>
-        <option>Offer</option><option>Rejected</option><option>Ghosted</option>
+        <option>Saved</option>
+        <option>Applied</option>
+        <option>Interview</option>
+        <option>Offer</option>
+        <option>Rejected</option>
+        <option>Ghosted</option>
       </select>
-      <select class="form-select" id="sort-sel" style="width:140px" onchange="loadApps()">
+      <select class="form-select" id="sort-sel" style="width:136px;background:var(--white)" onchange="loadApps()">
         <option value="date_desc">Newest First</option>
         <option value="date_asc">Oldest First</option>
         <option value="company">Company A–Z</option>
         <option value="salary">Salary</option>
       </select>
     </div>
-    <button class="btn btn-primary" onclick="openAddModal()"><span>＋</span> Track Job</button>
+    <button class="btn btn-primary" onclick="openAddModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Track Job
+    </button>
   </div>
 </div>
 
@@ -48,7 +63,7 @@
       <tbody id="table-body"></tbody>
     </table>
     <div id="list-empty" class="empty-state" style="display:none">
-      <div class="empty-icon">📭</div>
+      <div class="empty-icon">&#x1F4ED;</div>
       <div class="empty-text">No applications found</div>
       <div class="empty-sub">Try a different filter or add a new application</div>
     </div>
@@ -60,12 +75,14 @@
 <div class="drawer" id="detail">
 
   <div class="drawer-header">
-    <div id="d-header">
-      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px" id="d-company">—</div>
-      <div style="font-size:14px;color:var(--text2);margin-top:2px" id="d-role">—</div>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap" id="d-actions"></div>
+    <div id="d-header" style="min-width:0;flex:1">
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--text)" id="d-company">—</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:3px" id="d-role">—</div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" id="d-actions"></div>
     </div>
-    <button class="btn btn-ghost btn-icon" onclick="Drawer.close('detail')" style="flex-shrink:0">✕</button>
+    <button class="btn btn-ghost btn-icon" onclick="Drawer.close('detail')" style="flex-shrink:0;margin-top:-4px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 
   <div class="drawer-body" id="d-body"></div>
@@ -89,7 +106,8 @@ async function loadApps() {
   if (search) url += `&search=${encodeURIComponent(search)}`;
 
   const apps = await API.get(url);
-  document.getElementById('app-count-lbl').textContent = apps.length + ' application' + (apps.length !== 1 ? 's' : '');
+  document.getElementById('app-count-lbl').textContent =
+    apps.length + ' application' + (apps.length !== 1 ? 's' : '');
 
   const tbody = document.getElementById('table-body');
   const empty = document.getElementById('list-empty');
@@ -100,8 +118,8 @@ async function loadApps() {
     <tr onclick="openDetail(${a.id})">
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:32px;height:32px;border-radius:8px;background:${avatarColor(a.company)}18;color:${avatarColor(a.company)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">${a.company[0]}</div>
-          <div>
+          <div style="width:32px;height:32px;border-radius:7px;background:${avatarColor(a.company)}18;color:${avatarColor(a.company)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">${a.company[0]}</div>
+          <div style="min-width:0">
             <div class="td-company truncate">${a.company}</div>
             <div class="td-role truncate">${a.role}</div>
           </div>
@@ -116,12 +134,11 @@ async function loadApps() {
       <td>${pDot(a.priority)}</td>
       <td>
         <div style="display:flex;gap:4px">
-          <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation();openAddModal(${a.id})" title="Edit">✏️</button>
-          <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation();deleteApp(${a.id},'${a.company}')" title="Delete">🗑</button>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation();openAddModal(${a.id})" title="Edit" style="font-size:13px">&#x270F;&#xFE0F;</button>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation();deleteApp(${a.id},'${a.company}')" title="Delete" style="font-size:13px">&#x1F5D1;</button>
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
 async function openDetail(id) {
@@ -133,18 +150,24 @@ async function openDetail(id) {
 
   document.getElementById('d-actions').innerHTML = `
     ${badge(a.status)}
-    <button class="btn btn-outline btn-sm" onclick="openAddModal(${a.id})">✏️ Edit</button>
+    <button class="btn btn-outline btn-sm" onclick="openAddModal(${a.id})">&#x270F;&#xFE0F; Edit</button>
     <select class="form-select" style="font-size:12px;padding:4px 8px;width:auto" onchange="quickStatus(${a.id},this.value)">
       ${['Saved','Applied','Interview','Offer','Rejected','Ghosted'].map(s=>`<option${a.status===s?' selected':''}>${s}</option>`).join('')}
     </select>
-    ${a.job_url ? `<a href="${a.job_url}" target="_blank" class="btn btn-outline btn-sm">🔗 Job Post</a>` : ''}
-    <button class="btn btn-danger btn-sm" onclick="deleteApp(${a.id},'${a.company.replace("'","\\'")}')">🗑 Delete</button>
+    ${a.job_url ? `<a href="${a.job_url}" target="_blank" class="btn btn-outline btn-sm">&#x1F517; Job Post</a>` : ''}
+    <button class="btn btn-danger btn-sm" onclick="deleteApp(${a.id},'${a.company.replace("'","\\'")}')">Delete</button>
   `;
 
   const tl = (a.timeline||[]).map((t,i,arr) => `
     <div class="tl-item">
-      <div class="tl-left"><div class="tl-dot"></div>${i < arr.length-1 ? '<div class="tl-line"></div>' : ''}</div>
-      <div class="tl-content"><div class="tl-action">${t.action}</div><div class="tl-time">${new Date(t.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>
+      <div class="tl-left">
+        <div class="tl-dot"></div>
+        ${i < arr.length-1 ? '<div class="tl-line"></div>' : ''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-action">${t.action}</div>
+        <div class="tl-time">${new Date(t.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
     </div>`).join('');
 
   document.getElementById('d-body').innerHTML = `
@@ -173,7 +196,7 @@ async function openDetail(id) {
 
 async function quickStatus(id, status) {
   await API.patch('/api/applications/' + id + '/status', { status });
-  toast('Status → ' + status, 'success');
+  toast('Status updated to ' + status, 'success');
   loadApps(); loadNavCounts();
   openDetail(id);
 }
@@ -187,7 +210,7 @@ async function deleteApp(id, name) {
 }
 
 async function addTimelineNote(id) {
-  const inp = document.getElementById('tl-note-inp');
+  const inp  = document.getElementById('tl-note-inp');
   const note = inp.value.trim();
   if (!note) return;
   await API.post('/api/applications/' + id + '/timeline', { action: note });

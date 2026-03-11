@@ -12,105 +12,156 @@
 
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
+
+    <!-- Logo -->
     <div class="sidebar-logo">
-      <div class="logo-icon">🚀</div>
+      <div class="logo-icon">
+        <span class="logo-icon-text">HF</span>
+      </div>
       <div>
         <div class="logo-text">Hire<span>Flow</span><span class="logo-badge">PRO</span></div>
       </div>
     </div>
 
+    <!-- Navigation -->
     <nav class="sidebar-nav">
+
       <div class="nav-section">
         <div class="nav-section-label">Overview</div>
         <a class="nav-item" href="/dashboard">
-          <span class="nav-icon">⚡</span> Dashboard
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          Dashboard
         </a>
         <a class="nav-item" href="/analytics">
-          <span class="nav-icon">📊</span> Analytics
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </span>
+          Analytics
         </a>
       </div>
 
       <div class="nav-section">
         <div class="nav-section-label">Applications</div>
         <a class="nav-item" href="/applications">
-          <span class="nav-icon">📋</span> All Jobs
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </span>
+          All Jobs
           <span class="nav-badge" id="nav-cnt-all">—</span>
         </a>
         <a class="nav-item" href="/applications?status=Applied">
-          <span class="nav-icon">📨</span> Applied
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </span>
+          Applied
           <span class="nav-badge" id="nav-cnt-applied">—</span>
         </a>
         <a class="nav-item" href="/applications?status=Interview">
-          <span class="nav-icon">🎯</span> Interviews
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          Interviews
           <span class="nav-badge" id="nav-cnt-interview">—</span>
         </a>
         <a class="nav-item" href="/applications?status=Offer">
-          <span class="nav-icon">🎉</span> Offers
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          Offers
           <span class="nav-badge" id="nav-cnt-offer">—</span>
         </a>
         <a class="nav-item" href="/pipeline">
-          <span class="nav-icon">🗂</span> Pipeline
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="4" height="18" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="11" width="4" height="10" rx="1"/></svg>
+          </span>
+          Pipeline
         </a>
       </div>
 
       <div class="nav-section">
         <div class="nav-section-label">Tools</div>
         <a class="nav-item" href="/ai-assistant">
-          <span class="nav-icon">🤖</span> AI Assistant
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
+          </span>
+          AI Assistant
+          <span class="nav-pro-badge">AI</span>
         </a>
-        <a class="nav-item" href="/api/export/csv">
-          <span class="nav-icon">⬇</span> Export CSV
+        <a class="nav-item" href="#" onclick="exportCSV(event)">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </span>
+          Export CSV
         </a>
       </div>
 
       <div class="nav-section">
         <div class="nav-section-label">Account</div>
         <a class="nav-item" href="/pricing">
-          <span class="nav-icon">💎</span> Pricing
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </span>
+          Pricing
         </a>
         <a class="nav-item" href="/billing">
-          <span class="nav-icon">🧾</span> Billing
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </span>
+          Billing
         </a>
       </div>
 
-      <!-- Admin section (hidden by default, shown via JS for admins) -->
+      <!-- Admin section — shown via JS for admins -->
       <div class="nav-section" id="admin-nav" style="display:none">
         <div class="nav-section-label" style="color:var(--red)">Admin</div>
         <a class="nav-item" href="/admin">
-          <span class="nav-icon">🛡</span> Admin Dashboard
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          Admin Dashboard
         </a>
         <a class="nav-item" href="/admin/users">
-          <span class="nav-icon">👥</span> Manage Users
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          Manage Users
         </a>
       </div>
+
     </nav>
 
     <!-- Follow-up alerts -->
-    <div id="sidebar-followups" style="padding:0 10px;display:none"></div>
+    <div id="sidebar-followups" style="padding:0 8px;display:none"></div>
 
+    <!-- User card -->
     <div class="sidebar-footer">
       <div class="user-card" id="user-card" onclick="document.getElementById('logout-menu').classList.toggle('open')">
         <div class="user-avatar" id="user-avatar">?</div>
         <div style="flex:1;min-width:0">
           <div class="user-name" id="user-name">Loading...</div>
-          <div style="display:flex;align-items:center;gap:5px">
+          <div style="display:flex;align-items:center;gap:5px;margin-top:1px">
             <div class="user-role" id="user-role">—</div>
             <span id="user-plan-badge" class="plan-badge-sm" style="display:none">FREE</span>
           </div>
         </div>
-        <span style="font-size:10px;color:var(--text3)">▼</span>
+        <span style="flex-shrink:0;color:var(--text4);display:flex;align-items:center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
       </div>
       <div id="logout-menu" class="logout-menu">
         <button class="btn btn-danger btn-sm" style="width:100%" onclick="doLogout()">Sign Out</button>
       </div>
     </div>
+
   </aside>
 
   <!-- ── Main ── -->
   <div class="main-wrap">
     <!-- Impersonation banner -->
-    <div id="impersonate-banner" style="display:none;background:linear-gradient(90deg,var(--amber),var(--red));color:white;padding:8px 20px;font-size:12px;font-weight:600;display:none;align-items:center;gap:10px">
-      <span>👤 You are impersonating another user.</span>
+    <div id="impersonate-banner" style="display:none;background:linear-gradient(90deg,var(--amber),var(--red));color:white;padding:8px 28px;font-size:12px;font-weight:600;align-items:center;gap:10px">
+      <span>You are impersonating another user.</span>
       <button onclick="stopImpersonating()" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3);padding:4px 12px;font-size:11px">Switch Back to Admin</button>
     </div>
     {% block content %}{% endblock %}
@@ -124,7 +175,21 @@
   document.addEventListener('DOMContentLoaded', () => {
     loadNavCounts();
     loadUserInfo();
+    setActiveNav();
   });
+
+  function setActiveNav() {
+    const path = window.location.pathname;
+    const search = window.location.search;
+    document.querySelectorAll('.nav-item').forEach(el => {
+      const href = el.getAttribute('href');
+      if (!href) return;
+      const [hPath, hSearch] = href.split('?');
+      const isActive = hPath === path && (hSearch ? search.includes(hSearch) : true);
+      if (isActive) el.classList.add('active');
+    });
+  }
+
   async function loadUserInfo() {
     try {
       const res = await fetch('/api/auth/me');
@@ -137,9 +202,9 @@
       const planEl = document.getElementById('user-plan-badge');
       if (planEl && u.plan) {
         const colors = { free: 'var(--text3)', pro: 'var(--blue)', premium: 'var(--violet)' };
-        const names = { free: 'FREE', pro: 'PRO', premium: 'PREMIUM' };
-        planEl.textContent = names[u.plan] || 'FREE';
-        planEl.style.color = colors[u.plan] || 'var(--text3)';
+        const names  = { free: 'FREE', pro: 'PRO', premium: 'PREMIUM' };
+        planEl.textContent   = names[u.plan]  || 'FREE';
+        planEl.style.color   = colors[u.plan] || 'var(--text3)';
         planEl.style.borderColor = colors[u.plan] || 'var(--text3)';
         planEl.style.display = 'inline';
       }
@@ -155,15 +220,45 @@
       }
     } catch(e) {}
   }
+
   async function doLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   }
+
   async function stopImpersonating() {
     try {
       await fetch('/api/admin/stop-impersonating', { method: 'POST', headers: {'Content-Type':'application/json'} });
       window.location.href = '/admin/users';
     } catch(e) { alert('Failed to switch back'); }
+  }
+
+  async function exportCSV(e) {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/export/csv');
+      if (res.status === 403) {
+        const data = await res.json();
+        if (data.error === 'upgrade_required') {
+          toast('CSV Export requires a Pro or Premium plan. Visit Pricing to upgrade!', 'warn');
+          return;
+        }
+      }
+      if (!res.ok) {
+        toast('Export failed', 'error');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'hireflow-export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('CSV exported successfully!', 'success');
+    } catch(err) {
+      toast('Export failed', 'error');
+    }
   }
 </script>
 {% block scripts %}{% endblock %}
