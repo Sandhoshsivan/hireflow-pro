@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill -f \"HireFlowPro.Api\")",
+      "Bash(curl -s http://localhost:5146/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"demo@hireflowpro.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"Demo@123\\\\u0021\"\"\"\"}')",
+      "Bash(curl -s http://localhost:5146/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"admin@hireflowpro.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"Admin@123\\\\u0021\"\"\"\"}')",
+      "Bash(git -C /Users/sandhoshsivan/Projects/hireflow status --short)",
+      "Bash(git submodule:*)",
+      "WebFetch(domain:hireflow-pro.onrender.com)"
+    ]
+  }
+}
